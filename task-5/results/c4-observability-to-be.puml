@@ -1,0 +1,54 @@
+@startuml TradeWare_Observability_ToBe
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+LAYOUT_WITH_LEGEND()
+
+title TradeWare To Be - Monitoring, Logging and Alerting
+
+Person(operator, "SRE / Platform Engineer", "Monitors services, investigates incidents and receives alerts")
+Person(user, "Warehouse Employee", "Uses ERP interface to upload CSV reports")
+
+System_Boundary(tradeware, "TradeWare Application Platform") {
+  Container(frontend, "Angular Frontend", "Angular", "ERP web UI")
+  Container(monolith, "Java/WildFly Monolith", "Java / WildFly", "CSV upload, GCS storage, batch job creation and status UI")
+  Container(batch, "Spring Batch Processing Service", "Java / Spring Boot / Spring Batch", "CSV validation, enrichment and nomenclature updates")
+  ContainerDb(postgres, "PostgreSQL", "PostgreSQL", "Reference data, nomenclature data and batch metadata")
+  Container(gcs, "GCS", "Google Cloud Storage", "Uploaded CSV files and error reports")
+}
+
+System_Boundary(observability, "Observability Platform") {
+  Container(prometheus, "Prometheus", "Metrics TSDB", "Scrapes and stores metrics")
+  Container(grafana, "Grafana", "Dashboards", "Visualizes metrics and SLA dashboards")
+  Container(alertmanager, "Alertmanager", "Alert routing", "Groups, deduplicates and routes alerts")
+  Container(logAgent, "Fluent Bit / Filebeat", "Log collector", "Collects container logs and enriches them with Kubernetes metadata")
+  ContainerDb(search, "Elasticsearch / OpenSearch", "Log storage", "Stores structured JSON logs")
+  Container(kibana, "Kibana / OpenSearch Dashboards", "Log search UI", "Searches logs by job_id, file_id, warehouse_id and trace_id")
+  Container(postgresExporter, "PostgreSQL Exporter", "Prometheus exporter", "Exports PostgreSQL metrics")
+  Container(k8sExporters, "kube-state-metrics / node-exporter / cAdvisor", "Prometheus exporters", "Exports Kubernetes, node and container metrics")
+}
+
+Rel(user, frontend, "Uploads CSV and checks status", "HTTPS")
+Rel(frontend, monolith, "Calls upload/status APIs", "REST/HTTPS")
+Rel(monolith, gcs, "Writes uploaded CSV", "GCS API")
+Rel(monolith, batch, "Creates batch job and reads status", "REST/API or message")
+Rel(batch, gcs, "Reads CSV and writes error reports", "GCS API")
+Rel(batch, postgres, "Reads references, writes nomenclature and job metadata", "JDBC")
+
+Rel(prometheus, batch, "Scrapes /actuator/prometheus", "HTTP")
+Rel(prometheus, monolith, "Scrapes metrics endpoint or JMX exporter", "HTTP")
+Rel(prometheus, postgresExporter, "Scrapes PostgreSQL metrics", "HTTP")
+Rel(postgresExporter, postgres, "Reads PostgreSQL stats", "SQL")
+Rel(prometheus, k8sExporters, "Scrapes Kubernetes/node/container metrics", "HTTP")
+
+Rel(grafana, prometheus, "Queries metrics", "PromQL")
+Rel(prometheus, alertmanager, "Sends firing alerts", "Alert rules")
+Rel(alertmanager, operator, "Sends notifications", "Slack/Teams/Email/PagerDuty")
+Rel(operator, grafana, "Views dashboards", "HTTPS")
+
+Rel(monolith, logAgent, "Writes structured JSON logs to stdout", "container logs")
+Rel(batch, logAgent, "Writes structured JSON logs with job_id/file_id/trace_id", "container logs")
+Rel(logAgent, search, "Ships parsed logs", "HTTP")
+Rel(kibana, search, "Queries logs", "Search API")
+Rel(operator, kibana, "Investigates incidents and failed jobs", "HTTPS")
+
+@enduml

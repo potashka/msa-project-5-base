@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-init-sql
+  namespace: shipments-batch
+data:
+  init.sql: |
+    CREATE TABLE IF NOT EXISTS shipments (
+      id SERIAL PRIMARY KEY,
+      tracking_number VARCHAR(64) NOT NULL,
+      origin_city VARCHAR(128) NOT NULL,
+      destination_city VARCHAR(128) NOT NULL,
+      status VARCHAR(32) NOT NULL,
+      weight_kg NUMERIC(10, 2) NOT NULL,
+      price_amount NUMERIC(12, 2) NOT NULL,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+
+    INSERT INTO shipments (
+      tracking_number,
+      origin_city,
+      destination_city,
+      status,
+      weight_kg,
+      price_amount,
+      created_at
+    ) VALUES
+      ('TW-20260707-0001', 'Moscow', 'Saint Petersburg', 'delivered', 1200.50, 45000.00, NOW() - INTERVAL '3 days'),
+      ('TW-20260707-0002', 'Kazan', 'Moscow', 'in_transit', 840.00, 31500.00, NOW() - INTERVAL '2 days'),
+      ('TW-20260707-0003', 'Novosibirsk', 'Yekaterinburg', 'planned', 2300.75, 88000.00, NOW() - INTERVAL '1 day'),
+      ('TW-20260707-0004', 'Rostov-on-Don', 'Krasnodar', 'delayed', 510.30, 19000.00, NOW()),
+      ('TW-20260707-0005', 'Perm', 'Ufa', 'delivered', 760.10, 27000.00, NOW());
