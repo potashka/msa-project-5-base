@@ -93,7 +93,7 @@ def export_shipments() -> int:
         logging.info("Shipments export finished successfully")
         return 0
 
-    except Exception:
+    except Exception: # noqa
         logging.error("Shipments export failed")
         logging.error("Stacktrace:\n%s", traceback.format_exc())
         return 1
