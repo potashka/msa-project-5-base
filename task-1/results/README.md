@@ -1,4 +1,4 @@
-# Task 1. Batch processing POC with Apache Airflow
+# Задача 1. POC пакетной обработки на Apache Airflow
 
 Решение демонстрирует пакетную обработку маркетинговых данных в Apache Airflow:
 
@@ -6,10 +6,10 @@
 - чтение статусов доставок из CSV;
 - простая аналитика по заказам, выручке и доставкам;
 - ветвление через `BranchPythonOperator`;
-- retries для задач;
-- success/failure email-уведомления через локальный SMTP MailHog.
+- повторные попытки для задач;
+- email-уведомления об успехе и ошибке через локальный SMTP MailHog.
 
-POC намеренно не содержит Spark/Kafka-код: локальная демонстрация сфокусирована на простом batch pipeline. Интеграции с Kafka, Spark, BigQuery и Redshift описаны в [solution.md](solution.md).
+POC намеренно не содержит Spark/Kafka-код: локальная демонстрация сфокусирована на простом пайплайне пакетной обработки. Интеграции с Kafka, Spark, BigQuery и Redshift описаны в [solution.md](solution.md).
 
 ## Структура
 
@@ -53,7 +53,7 @@ docker compose up airflow-init
 docker compose up -d
 ```
 
-Первый запуск может занять несколько минут: Airflow контейнеры установят provider-пакет PostgreSQL и Python-зависимость `psycopg2-binary`.
+Первый запуск может занять несколько минут: контейнеры Airflow установят provider-пакет PostgreSQL и Python-зависимость `psycopg2-binary`.
 
 Открыть сервисы:
 
@@ -62,8 +62,8 @@ docker compose up -d
 
 Доступ в Airflow:
 
-- login: `airflow`
-- password: `airflow`
+- логин: `airflow`
+- пароль: `airflow`
 
 ## Запуск DAG
 
@@ -91,7 +91,7 @@ Airflow настроен на локальный SMTP MailHog:
 - SMTP port: `1025`
 - веб-интерфейс писем: http://localhost:8025
 
-После успешного запуска DAG в MailHog появится письмо от задачи `send_success_email`. При ошибке любой ключевой upstream-задачи сработает `send_failure_email`.
+После успешного запуска DAG в MailHog появится письмо от задачи `send_success_email`. При ошибке любой ключевой вышестоящей задачи сработает `send_failure_email`.
 
 ## Остановка
 
@@ -99,7 +99,7 @@ Airflow настроен на локальный SMTP MailHog:
 docker compose down
 ```
 
-Полная очистка контейнеров и volume:
+Полная очистка контейнеров и томов:
 
 ```powershell
 docker compose down -v
@@ -110,7 +110,7 @@ docker compose down -v
 Папка `screenshots/` добавлена специально для артефактов сдачи. Рекомендуется сохранить туда:
 
 1. `airflow_dag_list.png` - DAG `tradeware_marketing_batch_dag` виден в Airflow UI.
-2. `airflow_graph_success.png` - Graph/Grid View с успешным запуском и выбранной веткой.
+2. `airflow_graph_success.png` - представление Graph/Grid с успешным запуском и выбранной веткой.
 3. `airflow_task_logs.png` - логи `combine_and_analyze` с итоговой аналитикой.
 4. `mailhog_success_email.png` - письмо об успешном завершении в MailHog.
 5. `docker_compose_ps.png` - вывод `docker compose ps` с запущенными сервисами.

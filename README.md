@@ -1,14 +1,14 @@
-# MSA Project 5 - Batch Processing, Scheduling and Observability
+# MSA Project 5 - пакетная обработка, планирование и наблюдаемость
 
-Проект посвящён архитектурным и практическим решениям для batch processing, distributed scheduling и observability в микросервисной среде.
+Проект посвящён архитектурным и практическим решениям для пакетной обработки, распределённого планирования и наблюдаемости в микросервисной среде.
 
 В рамках работы рассмотрены:
 
 - выбор решений для пакетной обработки данных;
-- проектирование scheduled jobs;
+- проектирование запланированных задач;
 - реализация Kubernetes CronJob;
 - внедрение Spring Batch в архитектуру TradeWare;
-- проектирование observability: мониторинг, логирование и алертинг.
+- проектирование наблюдаемости: мониторинг, логирование и алертинг.
 
 ## Структура репозитория
 
@@ -32,15 +32,15 @@
 
 ## Задачи
 
-| Task | Цель | Выбранное решение | Основные артефакты | Где смотреть |
+| Задача | Цель | Выбранное решение | Основные артефакты | Где смотреть |
 |------|------|-------------------|--------------------|--------------|
-| Task1 | Выбор и POC решения для пакетной обработки данных | Apache Airflow | Обоснование выбора, Docker Compose, DAG, чтение PostgreSQL/CSV, ветвление pipeline, retry, email-уведомления | [task-1/results](task-1/results) |
-| Task2 | Дизайн модуля генерации B2B price-list | Kubernetes CronJob | Сравнительная таблица Spring Batch / Airflow / K8s Job / Spark, C4 To Be, план имплементации | [task-2/results](task-2/results) |
-| Task3 | Реализация Distributed Scheduling через Kubernetes CronJob | K8s CronJob + Python exporter + Minikube | Python exporter, Dockerfile, Kubernetes YAML, PostgreSQL в Minikube, CronJob на 20:00, экспорт `shipments` в CSV | [task-3/results](task-3/results) |
-| Task4 | Архитектурное решение ETL для TradeWare | Spring Batch | ADR, C4 To Be, Spring Batch Processing Service, альтернативы и риски | [task-4/results](task-4/results) |
-| Task5 | Проектирование мониторинга, логирования и оповещения | Prometheus/Grafana/Alertmanager + ELK/OpenSearch | Observability C4, метрики, структурированные логи, алерты, примеры Prometheus и Fluent Bit конфигов | [task-5/results](task-5/results) |
+| Задача 1 | Выбор и POC решения для пакетной обработки данных | Apache Airflow | Обоснование выбора, Docker Compose, DAG, чтение PostgreSQL/CSV, ветвление пайплайна, повторные попытки, email-уведомления | [task-1/results](task-1/results) |
+| Задача 2 | Дизайн модуля генерации B2B-прайс-листов | Kubernetes CronJob | Сравнительная таблица Spring Batch / Airflow / K8s Job / Spark, целевая C4-диаграмма, план имплементации | [task-2/results](task-2/results) |
+| Задача 3 | Реализация распределённого планирования через Kubernetes CronJob | K8s CronJob + Python exporter + Minikube | Python exporter, Dockerfile, Kubernetes YAML, PostgreSQL в Minikube, CronJob на 20:00, экспорт `shipments` в CSV | [task-3/results](task-3/results) |
+| Задача 4 | Архитектурное решение ETL для TradeWare | Spring Batch | ADR, целевая C4-диаграмма, сервис обработки Spring Batch, альтернативы и риски | [task-4/results](task-4/results) |
+| Задача 5 | Проектирование мониторинга, логирования и оповещения | Prometheus/Grafana/Alertmanager + ELK/OpenSearch | C4-диаграмма наблюдаемости, метрики, структурированные логи, алерты, примеры конфигов Prometheus и Fluent Bit | [task-5/results](task-5/results) |
 
-## Local environment
+## Локальное окружение
 
 Проект выполнялся и рассчитан на локальную проверку в окружении:
 
@@ -49,7 +49,7 @@
 - WSL2 Ubuntu;
 - Minikube;
 - kubectl;
-- PostgreSQL client;
+- клиент PostgreSQL;
 - Draw.io / PlantUML.
 
 Проверка базовых инструментов:
@@ -93,11 +93,11 @@ minikube start --driver=docker --cpus=4 --memory=6144
 kubectl get nodes
 ```
 
-## How to run
+## Как запустить
 
 Подробные инструкции находятся внутри README соответствующих задач. Корневой README даёт только быстрые точки входа.
 
-### Task1: Apache Airflow POC
+### Задача 1: POC на Apache Airflow
 
 ```bash
 cd task-1/results
@@ -106,7 +106,7 @@ docker compose up -d --build
 
 Дальше см. [task-1/results/README.md](task-1/results/README.md).
 
-### Task3: Kubernetes CronJob в Minikube
+### Задача 3: Kubernetes CronJob в Minikube
 
 ```bash
 cd task-3/results
@@ -120,17 +120,17 @@ kubectl -n shipments-batch logs job/shipments-export-manual
 
 Дальше см. [task-3/results/README.md](task-3/results/README.md).
 
-### Task2, Task4, Task5
+### Задачи 2, 4 и 5
 
 Это архитектурные задания. Запуск не требуется:
 
-- Task2: [task-2/results](task-2/results);
-- Task4: [task-4/results](task-4/results);
-- Task5: [task-5/results](task-5/results).
+- Задача 2: [task-2/results](task-2/results);
+- Задача 4: [task-4/results](task-4/results);
+- Задача 5: [task-5/results](task-5/results).
 
 Смотреть Markdown-документы, ADR, таблицы и C4-диаграммы.
 
-## Diagrams
+## Диаграммы
 
 Диаграммы находятся внутри соответствующих директорий `task-*/results`.
 
@@ -144,7 +144,7 @@ kubectl -n shipments-batch logs job/shipments-export-manual
 
 - Draw.io / diagrams.net;
 - PlantUML;
-- Markdown preview в IDE или GitHub.
+- предварительный просмотр Markdown в IDE или GitHub.
 
 Пример экспорта PlantUML в PNG:
 
@@ -153,19 +153,19 @@ plantuml -tpng task-4/results/c4-spring-batch-to-be.puml
 plantuml -tpng task-5/results/c4-observability-to-be.puml
 ```
 
-## Submission checklist
+## Чеклист для сдачи
 
 - [ ] Все результаты находятся в директориях `task-1/results` ... `task-5/results`.
-- [ ] В Task1 приложены DAG/config и скриншоты POC.
-- [ ] В Task2 есть таблица сравнения, C4 To Be и план имплементации.
-- [ ] В Task3 есть Dockerfile, exporter, k8s YAML и скриншоты Minikube.
-- [ ] В Task4 есть ADR и C4-диаграмма Spring Batch.
-- [ ] В Task5 есть observability C4, метрики, логи и алерты.
+- [ ] В задаче 1 приложены DAG/config и скриншоты POC.
+- [ ] В задаче 2 есть таблица сравнения, целевая C4-диаграмма и план имплементации.
+- [ ] В задаче 3 есть Dockerfile, exporter, k8s YAML и скриншоты Minikube.
+- [ ] В задаче 4 есть ADR и C4-диаграмма Spring Batch.
+- [ ] В задаче 5 есть C4-диаграмма наблюдаемости, метрики, логи и алерты.
 - [ ] Все README обновлены.
 - [ ] Pull Request содержит все изменения.
 - [ ] Репозиторий публичный.
 
-## Git commands
+## Команды Git
 
 ```bash
 git status

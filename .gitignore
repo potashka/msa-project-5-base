@@ -6,7 +6,5 @@ target/
 build/
 .idea/
 .vscode/
-.agents/
 __pycache__/
 *.py[cod]
-REVIEW.md

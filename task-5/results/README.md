@@ -1,39 +1,39 @@
-# Task 5. Observability architecture for TradeWare
+# Задача 5. Архитектура наблюдаемости для TradeWare
 
-В этой папке находятся проектные материалы по мониторингу, логированию и оповещениям для архитектуры TradeWare с Java/WildFly, Spring Batch, PostgreSQL, GCS и Kubernetes/cloud infrastructure.
+В этой папке находятся проектные материалы по мониторингу, логированию и оповещениям для архитектуры TradeWare с Java/WildFly, Spring Batch, PostgreSQL, GCS и Kubernetes/cloud-инфраструктурой.
 
-Это не production-ready Helm stack. Результат задания: архитектура observability, каталог метрик, формат логов, правила алертов, C4-диаграмма и примеры конфигураций.
+Это не готовый к промышленной эксплуатации Helm-стек. Результат задания: архитектура наблюдаемости, каталог метрик, формат логов, правила алертов, C4-диаграмма и примеры конфигураций.
 
-## Result files
+## Файлы результата
 
-- [monitoring-logging-solution.md](monitoring-logging-solution.md) - общая архитектура Prometheus, Grafana, Alertmanager, Micrometer, PostgreSQL Exporter, Kubernetes exporters и ELK/OpenSearch logging.
-- [metrics.md](metrics.md) - каталог технических, бизнес и SLA-метрик с примерами alert conditions.
+- [monitoring-logging-solution.md](monitoring-logging-solution.md) - общая архитектура Prometheus, Grafana, Alertmanager, Micrometer, PostgreSQL Exporter, экспортеров Kubernetes и логирования через ELK/OpenSearch.
+- [metrics.md](metrics.md) - каталог технических, бизнес и SLA-метрик с примерами условий для алертов.
 - [logging.md](logging.md) - формат структурированных JSON-логов, обязательные поля и события INFO/WARN/ERROR.
-- [alerting-rules.md](alerting-rules.md) - описание ключевых алертов и severity.
-- [c4-observability-to-be.puml](c4-observability-to-be.puml) - C4 To Be диаграмма потоков метрик, логов и алертов.
-- [prometheus/prometheus.yml](prometheus/prometheus.yml) - пример scrape-конфига Prometheus.
-- [prometheus/alert-rules.yml](prometheus/alert-rules.yml) - пример Prometheus alert rules.
-- [elk/fluent-bit.conf](elk/fluent-bit.conf) - пример Fluent Bit конфигурации для отправки container logs в Elasticsearch/OpenSearch.
+- [alerting-rules.md](alerting-rules.md) - описание ключевых алертов и уровней критичности.
+- [c4-observability-to-be.puml](c4-observability-to-be.puml) - целевая C4-диаграмма потоков метрик, логов и алертов.
+- [prometheus/prometheus.yml](prometheus/prometheus.yml) - пример конфигурации сбора метрик Prometheus.
+- [prometheus/alert-rules.yml](prometheus/alert-rules.yml) - пример правил алертов Prometheus.
+- [elk/fluent-bit.conf](elk/fluent-bit.conf) - пример конфигурации Fluent Bit для отправки контейнерных логов в Elasticsearch/OpenSearch.
 - [README.md](README.md) - описание состава результата и скриншотов.
 
-## Selected stack
+## Выбранный стек
 
-- Prometheus + Grafana + Alertmanager for metrics and alerting.
-- Micrometer + Spring Boot Actuator for Spring Batch service metrics.
-- PostgreSQL Exporter for database metrics.
-- kube-state-metrics / node-exporter / cAdvisor for Kubernetes infrastructure.
-- Fluent Bit or Filebeat for logs.
-- Elasticsearch or OpenSearch + Kibana/OpenSearch Dashboards for centralized logging.
+- Prometheus + Grafana + Alertmanager для метрик и алертинга.
+- Micrometer + Spring Boot Actuator для метрик сервиса Spring Batch.
+- PostgreSQL Exporter для метрик базы данных.
+- kube-state-metrics / node-exporter / cAdvisor для Kubernetes-инфраструктуры.
+- Fluent Bit или Filebeat для логов.
+- Elasticsearch или OpenSearch + Kibana/OpenSearch Dashboards для централизованного логирования.
 
-## How to export C4 diagram
+## Как экспортировать C4-диаграмму
 
-From `task-5/results`:
+Из директории `task-5/results`:
 
 ```bash
 plantuml -tpng c4-observability-to-be.puml
 ```
 
-Docker option:
+Вариант с Docker:
 
 ```bash
 docker run --rm -v "$PWD:/work" plantuml/plantuml -tpng /work/c4-observability-to-be.puml
@@ -45,25 +45,25 @@ PowerShell:
 docker run --rm -v "${PWD}:/work" plantuml/plantuml -tpng /work/c4-observability-to-be.puml
 ```
 
-The diagram uses C4-PlantUML from GitHub. If PlantUML runs without internet access, download the C4-PlantUML library locally and replace the `!include` URL in the `.puml` file.
+Диаграмма использует C4-PlantUML из GitHub. Если PlantUML запускается без доступа в интернет, скачайте библиотеку C4-PlantUML локально и замените URL в `!include` внутри `.puml` файла.
 
-## Screenshots / diagrams for submission
+## Скриншоты и диаграммы для сдачи
 
-Recommended artifacts:
+Рекомендуемые артефакты:
 
-1. `c4_observability_to_be.png` - rendered C4 observability diagram.
-2. `metrics_catalog.png` - key part of `metrics.md` with batch, SLA, JVM, DB and Kubernetes metrics.
-3. `logging_format.png` - JSON log format from `logging.md`.
-4. `alerting_rules.png` - alert table from `alerting-rules.md`.
-5. `prometheus_config.png` - scrape config example.
-6. `fluent_bit_config.png` - log shipping config example.
+1. `c4_observability_to_be.png` - отрендеренная C4-диаграмма наблюдаемости.
+2. `metrics_catalog.png` - ключевая часть `metrics.md` с метриками пакетной обработки, SLA, JVM, БД и Kubernetes.
+3. `logging_format.png` - JSON-формат логов из `logging.md`.
+4. `alerting_rules.png` - таблица алертов из `alerting-rules.md`.
+5. `prometheus_config.png` - пример конфигурации сбора метрик.
+6. `fluent_bit_config.png` - пример конфигурации доставки логов.
 
-## Notes
+## Примечания
 
-For a real production rollout, the next step would be to package this into Helm/Kustomize and add:
+Для реального промышленного развёртывания следующим шагом нужно упаковать решение в Helm/Kustomize и добавить:
 
-- Prometheus Operator `ServiceMonitor` resources;
-- Grafana dashboards as JSON;
-- Alertmanager routes and receivers;
-- OpenSearch index templates and lifecycle policies;
-- runbooks linked from alert annotations.
+- ресурсы `ServiceMonitor` для Prometheus Operator;
+- дашборды Grafana в формате JSON;
+- маршруты и получателей Alertmanager;
+- шаблоны индексов OpenSearch и политики жизненного цикла;
+- инструкции реагирования, связанные с аннотациями алертов.
