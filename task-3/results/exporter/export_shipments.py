@@ -16,8 +16,8 @@ class CountingWriter:
         self.file_handle = file_handle
         self.line_count = 0
 
-    def write(self, data: str) -> int:
-        self.line_count += data.count("\n")
+    def write(self, data: bytes) -> int:
+        self.line_count += data.count(b"\n")
         return self.file_handle.write(data)
 
 
@@ -83,7 +83,7 @@ def export_shipments() -> int:
                     ) TO STDOUT WITH CSV HEADER
                 """
 
-                with output_path.open("w", encoding="utf-8", newline="") as csv_file:
+                with output_path.open("wb") as csv_file:
                     counting_writer = CountingWriter(csv_file)
                     cursor.copy_expert(copy_sql, counting_writer)
                     row_count = max(counting_writer.line_count - 1, 0)
