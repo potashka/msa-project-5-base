@@ -34,6 +34,7 @@ default_args = {
 
 
 def extract_postgres_data(**context):
+    """Читает демо-данные из PostgreSQL и считает базовые агрегаты."""
     hook = PostgresHook(postgres_conn_id=DEMO_POSTGRES_CONN_ID)
 
     orders = hook.get_records(
@@ -71,6 +72,7 @@ def extract_postgres_data(**context):
 
 
 def read_delivery_csv(**context):
+    """Читает CSV со статусами доставок и группирует их по статусу."""
     if not DELIVERIES_PATH.exists():
         raise FileNotFoundError(f"CSV file not found: {DELIVERIES_PATH}")
 
@@ -88,6 +90,7 @@ def read_delivery_csv(**context):
 
 
 def combine_and_analyze(**context):
+    """Объединяет результаты извлечения данных и формирует сводную аналитику."""
     ti = context["ti"]
     postgres_result = ti.xcom_pull(task_ids="extract_postgres_data")
     delivery_result = ti.xcom_pull(task_ids="read_delivery_csv")
@@ -124,6 +127,7 @@ def combine_and_analyze(**context):
 
 
 def choose_processing_branch(**context):
+    """Выбирает ветку обработки по общему количеству обработанных записей."""
     analytics = context["ti"].xcom_pull(task_ids="combine_and_analyze")
     total_records = analytics["total_records"]
 
@@ -144,6 +148,7 @@ def choose_processing_branch(**context):
 
 
 def normal_processing(**context):
+    """Лог. результат обычной ветки обработки небольшого объёма данных."""
     analytics = context["ti"].xcom_pull(task_ids="combine_and_analyze")
     LOGGER.info(
         "Normal processing completed. Prepared marketing batch for %s records.",
@@ -152,6 +157,7 @@ def normal_processing(**context):
 
 
 def high_volume_processing(**context):
+    """Лог. результат ветки обработки повышенного объёма данных."""
     analytics = context["ti"].xcom_pull(task_ids="combine_and_analyze")
     LOGGER.info(
         "High-volume processing completed. In production this branch can submit Spark/Kubernetes job. Records=%s",

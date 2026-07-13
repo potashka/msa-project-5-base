@@ -12,16 +12,21 @@ LOG_FORMAT = "%(asctime)s %(levelname)s %(message)s"
 
 
 class CountingWriter:
+    """Оборачивает файловый объект и считает записанные строки CSV."""
+
     def __init__(self, file_handle):
+        """Сохр. файловый объект и инициализирует счётчик строк."""
         self.file_handle = file_handle
         self.line_count = 0
 
     def write(self, data: bytes) -> int:
+        """Записывает байты в файл и увеличивает счётчик строк."""
         self.line_count += data.count(b"\n")
         return self.file_handle.write(data)
 
 
 def get_required_env(name: str) -> str:
+    """Возвр. обязательную переменную окружения или выбрасывает ошибку."""
     value = os.getenv(name)
     if not value:
         raise ValueError(f"Required environment variable {name} is not set")
@@ -29,6 +34,7 @@ def get_required_env(name: str) -> str:
 
 
 def export_shipments() -> int:
+    """Экспорт. таблицу shipments из PostgreSQL в CSV-файл."""
     logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
 
     db_host = get_required_env("DB_HOST")
