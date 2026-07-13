@@ -207,13 +207,13 @@ minikube docker-env -u | Invoke-Expression
 
 ## Скриншоты для сдачи
 
-Сохранить скриншоты в `task-3/results/screenshots/`:
+В папке `task-3/results/screenshots/` находятся артефакты проверки Minikube POC:
 
-1. `minikube_status.png` - вывод `minikube status`, где видно, что кластер запущен.
-2. `docker_build.png` - успешный `docker build -t shipments-exporter:local .`.
-3. `kubectl_apply.png` - успешный `kubectl apply -f k8s/`.
-4. `postgres_running.png` - PostgreSQL pod находится в рабочем состоянии.
-5. `cronjob.png` - `kubectl get cronjob` с расписанием `0 20 * * *`.
-6. `manual_job_success.png` - ручной Job создан из CronJob и успешно завершён.
-7. `exporter_logs.png` - логи exporter с количеством строк и путём к CSV.
-8. `csv_in_pvc.png` - созданный `shipments_YYYYMMDD_HHMMSS.csv` виден в `/exports`.
+1. `01_minikube_status.png` - вывод `minikube status`, где видно, что кластер запущен.
+2. `02_exporter_image.png` - собранный Docker-образ `shipments-exporter:local` доступен в Minikube.
+3. `03_kubernetes_resources.png` - созданные Kubernetes-ресурсы в namespace `shipments-batch`.
+4. `04_cronjob_schedule.png` - CronJob с расписанием `0 20 * * *` и часовым поясом `Europe/Moscow`.
+5. `05_manual_job_success.png` - ручной Job создан из CronJob и успешно завершён.
+6. `06_exporter_logs.png` - логи exporter с количеством строк и путём к CSV.
+7. `07_postgres_shipments.png` - проверка данных в таблице `shipments` в PostgreSQL.
+8. `08_csv_in_pvc.png` - созданный `shipments_YYYYMMDD_HHMMSS.csv` виден в `/exports`.

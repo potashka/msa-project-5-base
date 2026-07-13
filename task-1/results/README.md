@@ -107,10 +107,12 @@ docker compose down -v
 
 ## Скриншоты для сдачи
 
-Папка `screenshots/` добавлена специально для артефактов сдачи. Рекомендуется сохранить туда:
+В папке `screenshots/` находятся артефакты проверки POC:
 
-1. `airflow_dag_list.png` - DAG `tradeware_marketing_batch_dag` виден в Airflow UI.
-2. `airflow_graph_success.png` - представление Graph/Grid с успешным запуском и выбранной веткой.
-3. `airflow_task_logs.png` - логи `combine_and_analyze` с итоговой аналитикой.
-4. `mailhog_success_email.png` - письмо об успешном завершении в MailHog.
-5. `docker_compose_ps.png` - вывод `docker compose ps` с запущенными сервисами.
+1. `01_docker_ps.png` - вывод `docker compose ps` с запущенными сервисами.
+2. `02_tradeware_marketing_batch_dag.png` - DAG `tradeware_marketing_batch_dag` в Airflow UI.
+3. `03_mailhog_success_email.png` - письмо об успешном завершении DAG в MailHog.
+4. `04_failure_provocation_error.png` - пример спровоцированной ошибки для проверки failure-сценария.
+5. `05_airflow_graph_failure.png` - представление Graph/Grid с ошибочным запуском DAG.
+6. `06_mailhog_alert_email.png` - alert-письмо в MailHog после ошибки.
+7. `07_mailhog_failure_email.png` - failure-письмо в MailHog после неуспешного запуска.
