@@ -1,101 +1,101 @@
-# Implementation plan
+# План внедрения
 
-## 1. Prepare SQL query
+## 1. Подготовить SQL-запрос
 
-- Define the exact output columns for B2B price lists.
-- Prepare SQL JOIN across `products`, `categories`, `clients` and `client_prices`.
-- Validate filtering rules for active products, active clients, currencies and special client prices.
-- Check indexes for join keys and filtering columns.
+- Определить точный набор выходных колонок для B2B-прайс-листов.
+- Подготовить SQL JOIN по таблицам `products`, `categories`, `clients` и `client_prices`.
+- Проверить правила фильтрации активных товаров, активных клиентов, валют и специальных клиентских цен.
+- Проверить индексы по ключам JOIN и полям фильтрации.
 
-## 2. Create exporter application
+## 2. Создать exporter-приложение
 
-- Build a small stateless `price-list-exporter` application.
-- Read configuration from environment variables.
-- Connect to PostgreSQL with a read-only user.
-- Execute the prepared SQL query.
-- Stream result rows to CSV or XLS without loading unnecessary data into memory.
-- Exit with code `0` on success and non-zero code on failure.
+- Собрать небольшое stateless-приложение `price-list-exporter`.
+- Читать конфигурацию из переменных окружения.
+- Подключаться к PostgreSQL под read-only пользователем.
+- Выполнять подготовленный SQL-запрос.
+- Потоково записывать строки результата в CSV или XLS без лишней загрузки данных в память.
+- Завершаться с кодом `0` при успехе и с non-zero кодом при ошибке.
 
-## 3. Create Dockerfile
+## 3. Создать Dockerfile
 
-- Package the exporter into a minimal Docker image.
-- Add health-neutral startup behavior: the container should run once and exit.
-- Pin runtime dependencies.
-- Publish the image to the project container registry.
+- Упаковать exporter в минимальный Docker-образ.
+- Добавить поведение запуска без healthcheck-зависимости: контейнер должен выполниться один раз и завершиться.
+- Зафиксировать версии runtime-зависимостей.
+- Опубликовать образ в container registry проекта.
 
-## 4. Create ConfigMap and Secret
+## 4. Создать ConfigMap и Secret
 
-- Put non-sensitive settings into `ConfigMap`:
-  - database host;
-  - database port;
-  - database name;
-  - output format;
-  - storage bucket/path;
-  - timezone, if required.
-- Put sensitive values into `Secret`:
-  - database username;
-  - database password;
-  - storage credentials, if IAM/Workload Identity is not used.
+- Поместить нечувствительные настройки в `ConfigMap`:
+  - host базы данных;
+  - port базы данных;
+  - имя базы данных;
+  - формат вывода;
+  - bucket/path хранилища;
+  - timezone, если требуется.
+- Поместить чувствительные значения в `Secret`:
+  - username базы данных;
+  - password базы данных;
+  - storage credentials, если IAM/Workload Identity не используется.
 
-## 5. Create Kubernetes CronJob
+## 5. Создать Kubernetes CronJob
 
-- Define CronJob with schedule:
+- Описать CronJob с расписанием:
 
 ```yaml
 schedule: "0 6 * * *"
 timeZone: "Europe/Moscow"
 ```
 
-- Use the `price-list-exporter` image.
-- Inject `ConfigMap` and `Secret` as environment variables.
-- Mount PVC only for local POC if object storage is not used.
+- Использовать образ `price-list-exporter`.
+- Передать `ConfigMap` и `Secret` через переменные окружения.
+- Монтировать PVC только для локального POC, если object storage не используется.
 
-## 6. Configure resources and reliability
+## 6. Настроить ресурсы и надёжность
 
-- Set CPU/memory requests and limits.
-- Configure `concurrencyPolicy: Forbid`.
-- Configure `backoffLimit` to limit retries after failures.
-- Configure `restartPolicy: Never` or `OnFailure` according to the final retry strategy.
-- Configure `successfulJobsHistoryLimit` and `failedJobsHistoryLimit`.
-- Add `activeDeadlineSeconds` to prevent a stuck export from running indefinitely.
+- Задать CPU/memory requests и limits.
+- Настроить `concurrencyPolicy: Forbid`.
+- Настроить `backoffLimit`, чтобы ограничить retries после ошибок.
+- Настроить `restartPolicy: Never` или `OnFailure` согласно финальной retry strategy.
+- Настроить `successfulJobsHistoryLimit` и `failedJobsHistoryLimit`.
+- Добавить `activeDeadlineSeconds`, чтобы зависший экспорт не выполнялся бесконечно.
 
-## 7. Configure CSV/XLS storage
+## 7. Настроить хранение CSV/XLS
 
-- Production option: save generated files to S3/GCS.
-- Local POC option: save generated files to PVC.
-- Use deterministic file naming, for example:
+- Production-вариант: сохранять созданные файлы в S3/GCS.
+- Локальный POC-вариант: сохранять созданные файлы в PVC.
+- Использовать детерминированные имена файлов, например:
 
 ```text
 price-lists/yyyy-mm-dd/client-<client_id>.csv
 ```
 
-- Define retention policy for old files.
+- Определить retention policy для старых файлов.
 
-## 8. Configure logs and metrics
+## 8. Настроить логи и метрики
 
-- Write structured JSON logs to stdout.
-- Log start time, finish time, duration, number of clients, number of rows, output location and final status.
-- Collect Kubernetes Job/Pod metrics with Prometheus.
-- Configure alerts for:
-  - failed job;
-  - no successful run after 06:00;
-  - execution duration above expected threshold;
-  - storage write failure.
+- Писать структурированные JSON logs в stdout.
+- Логировать время старта, время завершения, длительность, количество клиентов, количество строк, путь результата и финальный статус.
+- Собирать Kubernetes Job/Pod metrics через Prometheus.
+- Настроить алерты:
+  - неуспешная job;
+  - нет успешного запуска после 06:00;
+  - длительность выполнения выше ожидаемого порога;
+  - ошибка записи в хранилище.
 
-## 9. Verify locally in Minikube
+## 9. Проверить локально в Minikube
 
-- Build and load the Docker image into Minikube.
-- Deploy PostgreSQL test data or connect to a test database.
-- Apply `ConfigMap`, `Secret`, PVC and CronJob manifests.
-- Trigger the Job manually from the CronJob for validation.
-- Check generated CSV/XLS file.
-- Check logs and Job status.
+- Собрать и загрузить Docker-образ в Minikube.
+- Развернуть тестовые данные PostgreSQL или подключиться к тестовой базе.
+- Применить манифесты `ConfigMap`, `Secret`, PVC и CronJob.
+- Запустить Job вручную из CronJob для проверки.
+- Проверить созданный CSV/XLS-файл.
+- Проверить логи и статус Job.
 
-## 10. Move to cloud Kubernetes
+## 10. Перенести в cloud Kubernetes
 
-- Publish image to cloud container registry.
-- Replace local PVC with S3/GCS integration.
-- Configure cloud IAM/Workload Identity for storage access.
-- Deploy manifests through CI/CD or Helm/Kustomize.
-- Verify the scheduled 06:00 run in the target timezone.
-- Add dashboard and alert rules to production monitoring.
+- Опубликовать образ в cloud container registry.
+- Заменить локальный PVC на интеграцию с S3/GCS.
+- Настроить cloud IAM/Workload Identity для доступа к хранилищу.
+- Разворачивать манифесты через CI/CD или Helm/Kustomize.
+- Проверить запланированный запуск в 06:00 в целевом часовом поясе.
+- Добавить dashboard и alert rules в production monitoring.

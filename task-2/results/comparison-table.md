@@ -1,6 +1,6 @@
-# Comparison table: price-list batch processing
+# Сравнительная таблица: пакетная обработка прайс-листов
 
-## Context
+## Контекст
 
 Задача TradeWare: каждый день в 06:00 формировать кастомные CSV/XLS-прайс-листы для B2B-клиентов на основе PostgreSQL. Объем данных небольшой:
 
@@ -11,7 +11,7 @@
 
 Обработка простая: выполнить SQL JOIN, сформировать файл, сохранить результат и отдать статус выполнения в наблюдаемость Kubernetes.
 
-## Comparison
+## Сравнение
 
 | Критерий | Spring Batch | Apache Airflow | K8s Job / CronJob | Apache Spark |
 |---|---|---|---|---|
@@ -22,9 +22,9 @@
 | Сложность развертывания в облаке и интеграция с микросервисной архитектурой | Хорошо разворачивается как контейнер, но нужен отдельный scheduler или запуск через Kubernetes. | Требует полноценного развертывания Airflow или managed-сервиса. Хорошо интегрируется, но это отдельная платформа. | Нативно подходит для Kubernetes: Docker image, ConfigMap, Secret, ServiceAccount, CronJob, logs/events/status через API кластера. | Требуется Spark on Kubernetes, Dataproc/EMR или Spark Operator. Интеграция мощная, но инфраструктурно тяжелая. |
 | Интеграция с логированием и мониторингом | Логи приложения и Micrometer/Prometheus возможны, но их нужно настроить в приложении и runtime. | Есть UI, история запусков, логи, SLA/alerts, интеграции со StatsD/Prometheus. | Нативные Kubernetes logs/events/job status, интеграция с Prometheus/Grafana и централизованным логированием через стандартный стек кластера. | Есть Spark UI, event logs и метрики, но мониторинг сложнее и рассчитан на распределенные вычисления. |
 
-## Conclusion
+## Вывод
 
-Для Task 2 оптимален **Kubernetes CronJob**.
+Для задачи 2 оптимален **Kubernetes CronJob**.
 
 Причины:
 

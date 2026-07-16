@@ -18,5 +18,3 @@
 2. `c4_to_be_diagram.png` - отрендеренная целевая C4-диаграмма из `c4-to-be.puml`.
 3. `solution_overview.png` - фрагмент `solution.md` с выбранной архитектурой.
 4. `implementation_plan.png` - фрагмент `implementation-plan.md` с планом внедрения.
-
-Если преподаватель принимает исходные Markdown/PlantUML-файлы без скриншотов, достаточно приложить содержимое этой папки.

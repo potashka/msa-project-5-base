@@ -1,47 +1,47 @@
-# Metrics catalog
+# Каталог метрик
 
-| Metric name | Source | Type | Why it is needed | Example alert condition |
+| Имя метрики | Источник | Тип | Зачем нужна | Пример условия алерта |
 |---|---|---|---|---|
-| `batch_job_duration_seconds` | Spring Batch Processing Service / Micrometer | SLA | Measures job processing time and SLA compliance. | p95 duration for 2 000-row jobs > 30s for 10m. |
-| `batch_job_failed_total` | Spring Batch Processing Service | Business/SLA | Counts failed batch jobs. | increase over 5m > 0 for critical warehouses. |
-| `batch_job_success_total` | Spring Batch Processing Service | Business | Counts successful jobs and proves pipeline is working. | no increase for N hours during business window. |
-| `batch_step_read_count` | Spring Batch step metrics | Technical/Business | Shows how many rows were read from CSV. | read count is 0 for completed job with non-empty file. |
-| `batch_step_write_count` | Spring Batch step metrics | Technical/Business | Shows how many rows were written to nomenclature DB. | write/read ratio below expected threshold. |
-| `batch_step_skip_count` | Spring Batch step metrics | Business/SLA | Tracks skipped bad rows. | skipped rows > 1% of read rows for 10m. |
-| `batch_retry_total` | Spring Batch Processing Service | Technical | Detects transient failures and unstable dependencies. | retries increase rapidly for 10m. |
-| `uploaded_files_total` | Java/WildFly Monolith | Business | Tracks upload volume by warehouse/time. | sudden drop to zero during expected upload window. |
-| `rows_processed_total` | Spring Batch Processing Service | Business | Tracks throughput and daily volume. | rows/sec below required baseline for 15m. |
-| `rows_failed_total` | Spring Batch Processing Service | Business/SLA | Tracks invalid or failed rows. | failed rows > threshold by warehouse or file type. |
-| `processing_sla_violation_total` | Spring Batch Processing Service | SLA | Counts reports that missed the 30s target for 2 000 rows. | any increase for high-priority warehouses. |
-| `http_server_requests_seconds` | Monolith and Spring Boot Actuator | Technical/SLA | Measures HTTP latency and request rates. | p95 upload/status API latency > 1s for 10m. |
-| `jvm_memory_used_bytes` | JVM / Micrometer / JMX Exporter | Technical | Detects memory pressure and leaks. | heap used > 85% for 15m. |
-| `db_connection_pool_active` | HikariCP/Micrometer or app pool metrics | Technical | Detects DB pool saturation. | active connections > 80% of max for 10m. |
-| `postgres_up` | PostgreSQL Exporter | Technical/SLA | Checks PostgreSQL availability. | equals 0 for 1m. |
-| `kube_pod_container_status_restarts_total` | kube-state-metrics | Technical | Detects pod restarts and crash loops. | increase > 3 in 15m for critical pods. |
-| `kube_pod_status_phase` | kube-state-metrics | Technical | Tracks pods pending/failed/running. | pod stuck Pending for > 10m. |
-| `container_cpu_usage_seconds_total` | cAdvisor/kubelet | Technical | Detects CPU saturation. | CPU usage near limit for 15m. |
-| `container_memory_working_set_bytes` | cAdvisor/kubelet | Technical | Detects memory pressure. | memory usage > 90% of limit for 10m. |
-| `gcs_request_errors_total` | Monolith / Batch Service | Technical/SLA | Detects GCS read/write/access errors. | increase > 0 for 5m. |
-| `batch_active_jobs` | Spring Batch Processing Service | Technical/Business | Tracks currently running jobs. | active jobs > configured safe parallelism. |
-| `batch_pending_jobs` | Batch job queue/status store | SLA | Detects backlog. | pending jobs age > 15m or queue depth > threshold. |
-| `batch_job_rows_per_second` | Spring Batch Processing Service | SLA | Measures processing throughput. | below baseline for 15m with active jobs. |
-| `postgres_locks_count` | PostgreSQL Exporter/custom query | Technical | Detects contention caused by batch writes. | locks above baseline for 10m. |
-| `postgres_deadlocks_total` | PostgreSQL Exporter | Technical/SLA | Detects write conflicts. | increase > 0 in 5m. |
+| `batch_job_duration_seconds` | Spring Batch Processing Service / Micrometer | SLA | Измеряет время обработки job и соблюдение SLA. | p95 duration для jobs на 2 000 строк > 30s в течение 10m. |
+| `batch_job_failed_total` | Spring Batch Processing Service | Бизнес/SLA | Считает неуспешные batch jobs. | прирост за 5m > 0 для критичных складов. |
+| `batch_job_success_total` | Spring Batch Processing Service | Бизнес | Считает успешные jobs и подтверждает работу пайплайна. | нет прироста за N часов в рабочем окне. |
+| `batch_step_read_count` | Spring Batch step metrics | Техническая/бизнес | Показывает, сколько строк прочитано из CSV. | read count равен 0 для completed job с непустым файлом. |
+| `batch_step_write_count` | Spring Batch step metrics | Техническая/бизнес | Показывает, сколько строк записано в nomenclature DB. | write/read ratio ниже ожидаемого порога. |
+| `batch_step_skip_count` | Spring Batch step metrics | Бизнес/SLA | Отслеживает пропущенные ошибочные строки. | skipped rows > 1% от read rows за 10m. |
+| `batch_retry_total` | Spring Batch Processing Service | Техническая | Выявляет временные ошибки и нестабильные зависимости. | retries быстро растут в течение 10m. |
+| `uploaded_files_total` | Java/WildFly Monolith | Бизнес | Отслеживает объём загрузок по складу и времени. | внезапное падение до нуля в ожидаемом окне загрузок. |
+| `rows_processed_total` | Spring Batch Processing Service | Бизнес | Отслеживает throughput и дневной объём. | rows/sec ниже базового уровня в течение 15m. |
+| `rows_failed_total` | Spring Batch Processing Service | Бизнес/SLA | Отслеживает невалидные или неуспешно обработанные rows. | failed rows выше порога по складу или типу файла. |
+| `processing_sla_violation_total` | Spring Batch Processing Service | SLA | Считает отчёты, которые не уложились в целевые 30s для 2 000 строк. | любой прирост для складов с высоким приоритетом. |
+| `http_server_requests_seconds` | Monolith и Spring Boot Actuator | Техническая/SLA | Измеряет HTTP latency и request rate. | p95 upload/status API latency > 1s в течение 10m. |
+| `jvm_memory_used_bytes` | JVM / Micrometer / JMX Exporter | Техническая | Выявляет memory pressure и утечки. | heap used > 85% в течение 15m. |
+| `db_connection_pool_active` | HikariCP/Micrometer или метрики app pool | Техническая | Выявляет насыщение DB pool. | active connections > 80% от max в течение 10m. |
+| `postgres_up` | PostgreSQL Exporter | Техническая/SLA | Проверяет доступность PostgreSQL. | равно 0 в течение 1m. |
+| `kube_pod_container_status_restarts_total` | kube-state-metrics | Техническая | Выявляет pod restarts и crash loops. | increase > 3 за 15m для критичных pods. |
+| `kube_pod_status_phase` | kube-state-metrics | Техническая | Отслеживает состояния pods: pending/failed/running. | pod находится в Pending больше 10m. |
+| `container_cpu_usage_seconds_total` | cAdvisor/kubelet | Техническая | Выявляет CPU saturation. | CPU usage близко к limit в течение 15m. |
+| `container_memory_working_set_bytes` | cAdvisor/kubelet | Техническая | Выявляет memory pressure. | memory usage > 90% от limit в течение 10m. |
+| `gcs_request_errors_total` | Monolith / Batch Service | Техническая/SLA | Выявляет ошибки чтения/записи/доступа к GCS. | increase > 0 за 5m. |
+| `batch_active_jobs` | Spring Batch Processing Service | Техническая/бизнес | Отслеживает текущие running jobs. | active jobs > безопасного уровня parallelism. |
+| `batch_pending_jobs` | Batch job queue/status store | SLA | Выявляет backlog. | возраст pending jobs > 15m или queue depth выше порога. |
+| `batch_job_rows_per_second` | Spring Batch Processing Service | SLA | Измеряет throughput обработки. | ниже baseline в течение 15m при наличии active jobs. |
+| `postgres_locks_count` | PostgreSQL Exporter/custom query | Техническая | Выявляет contention от batch writes. | locks выше baseline в течение 10m. |
+| `postgres_deadlocks_total` | PostgreSQL Exporter | Техническая/SLA | Выявляет write conflicts. | increase > 0 за 5m. |
 
-## Notes on labels
+## Примечания по labels
 
-Recommended metric labels:
+Рекомендуемые labels для метрик:
 
 - `service`;
 - `environment`;
 - `job_name`;
 - `step_name`;
 - `status`;
-- `warehouse_id` only if number of warehouses is controlled;
+- `warehouse_id` только если количество складов контролируемо;
 - `file_type`;
-- `exception` for bounded exception classes.
+- `exception` для ограниченного набора классов исключений.
 
-Avoid high-cardinality labels in Prometheus:
+Избегать high-cardinality labels в Prometheus:
 
 - `job_id`;
 - `file_id`;
@@ -49,4 +49,4 @@ Avoid high-cardinality labels in Prometheus:
 - user id;
 - file name.
 
-Use these identifiers in logs and traces instead.
+Эти идентификаторы лучше использовать в logs и traces.

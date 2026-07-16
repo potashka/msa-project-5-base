@@ -1,4 +1,4 @@
-# ADR: Spring Batch ETL for TradeWare warehouse reports
+# ADR: Spring Batch ETL для складских отчётов TradeWare
 
 ## Название задачи
 

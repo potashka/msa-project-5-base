@@ -1,10 +1,10 @@
-# Structured logging
+# Структурированное логирование
 
-## Log format
+## Формат логов
 
-All TradeWare services should write structured JSON logs to stdout/stderr. Fluent Bit/Filebeat collects container logs and sends them to Elasticsearch/OpenSearch.
+Все сервисы TradeWare должны писать структурированные JSON-логи в stdout/stderr. Fluent Bit/Filebeat собирает контейнерные логи и отправляет их в Elasticsearch/OpenSearch.
 
-Required fields:
+Обязательные поля:
 
 ```json
 {
@@ -23,7 +23,7 @@ Required fields:
 }
 ```
 
-Additional recommended fields:
+Дополнительные рекомендуемые поля:
 
 - `duration_ms`;
 - `rows_read`;
@@ -39,42 +39,42 @@ Additional recommended fields:
 - `pod_name`;
 - `namespace`.
 
-Kubernetes metadata can be added by Fluent Bit/Filebeat, so applications do not need to manually log pod/node labels.
+Метаданные Kubernetes могут добавляться через Fluent Bit/Filebeat, поэтому приложениям не нужно вручную логировать labels pod/node.
 
-## Required fields
+## Обязательные поля
 
-| Field | Description |
+| Поле | Описание |
 |---|---|
-| `timestamp` | Event time in ISO-8601 UTC format. |
+| `timestamp` | Время события в формате ISO-8601 UTC. |
 | `level` | `INFO`, `WARN`, `ERROR`. |
-| `service` | Service name: monolith, batch service, postgres-exporter side logs, etc. |
+| `service` | Имя сервиса: monolith, batch service, side logs postgres-exporter и т.д. |
 | `environment` | `dev`, `stage`, `prod`. |
-| `job_id` | Batch job identifier. Nullable for non-batch logs. |
-| `file_id` | Uploaded CSV file identifier. |
-| `warehouse_id` | Business context of the upload/report. |
-| `step_name` | Spring Batch step name. Nullable outside batch steps. |
-| `trace_id` | Distributed trace id propagated from upload request to batch job. |
-| `span_id` | Current operation span id. |
-| `error_code` | Stable application error code, for example `CSV_VALIDATION_FAILED`. |
-| `message` | Human-readable message. |
+| `job_id` | Идентификатор batch job. Может быть null для логов вне batch-процессов. |
+| `file_id` | Идентификатор загруженного CSV-файла. |
+| `warehouse_id` | Бизнес-контекст загрузки или отчёта. |
+| `step_name` | Имя Spring Batch step. Может быть null вне batch steps. |
+| `trace_id` | Distributed trace id, передаваемый от запроса загрузки к batch job. |
+| `span_id` | Идентификатор текущей операции span. |
+| `error_code` | Стабильный код ошибки приложения, например `CSV_VALIDATION_FAILED`. |
+| `message` | Человекочитаемое сообщение. |
 
-## Log levels
+## Уровни логирования
 
 ### INFO
 
-Use `INFO` for expected lifecycle events:
+Использовать `INFO` для ожидаемых событий жизненного цикла:
 
-- CSV upload accepted by monolith;
-- file saved to GCS;
-- batch job created;
-- batch job started;
-- step started;
-- chunk progress checkpoints, if not too noisy;
-- step completed with counters;
-- job completed successfully;
-- status requested by UI.
+- CSV-загрузка принята монолитом;
+- файл сохранён в GCS;
+- batch job создана;
+- batch job запущена;
+- step запущен;
+- checkpoints прогресса chunk, если это не создаёт слишком много шума;
+- step завершён со счётчиками;
+- job успешно завершена;
+- статус запрошен через UI.
 
-Example:
+Пример:
 
 ```json
 {
@@ -99,47 +99,47 @@ Example:
 
 ### WARN
 
-Use `WARN` for recoverable or business-significant issues:
+Использовать `WARN` для восстанавливаемых или бизнес-значимых проблем:
 
-- row skipped due to validation error;
-- retry succeeded after transient DB/GCS failure;
-- processing duration is near SLA threshold;
-- skip count exceeds warning threshold;
-- GCS upload is slow but successful;
-- batch queue depth is high but still within limits.
+- строка пропущена из-за ошибки валидации;
+- retry успешно завершился после временной ошибки DB/GCS;
+- длительность обработки близка к SLA threshold;
+- skip count превысил warning threshold;
+- GCS upload медленный, но успешный;
+- глубина batch queue высока, но ещё в пределах лимитов.
 
-Avoid logging every skipped row at `WARN` if files can contain many invalid rows. Prefer aggregated warning plus error report in GCS.
+Не стоит логировать каждую пропущенную строку на уровне `WARN`, если файлы могут содержать много невалидных строк. Лучше писать агрегированное предупреждение и error report в GCS.
 
 ### ERROR
 
-Use `ERROR` for failed operations requiring investigation:
+Использовать `ERROR` для неуспешных операций, требующих расследования:
 
-- job failed;
-- step failed;
-- GCS access denied;
-- PostgreSQL unavailable;
-- DB write failed after retries;
-- unexpected exception;
-- status update failed;
+- job завершилась ошибкой;
+- step завершился ошибкой;
+- доступ к GCS запрещён;
+- PostgreSQL недоступен;
+- запись в БД не удалась после retries;
+- непредвиденное исключение;
+- обновление статуса не удалось;
 - monolith failed to create batch job.
 
-Every `ERROR` log should include:
+Каждый `ERROR` log должен включать:
 
 - `error_code`;
 - `exception_class`;
 - `stacktrace`;
-- `job_id` and `file_id` when available;
-- enough context to reproduce or find the failed input.
+- `job_id` и `file_id`, если доступны;
+- достаточно контекста, чтобы воспроизвести проблему или найти неуспешный input.
 
-## Correlation strategy
+## Стратегия корреляции
 
-Use MDC/log context in Java services:
+Использовать MDC/log context в Java-сервисах:
 
-- monolith sets `trace_id`, `file_id`, `warehouse_id`;
-- batch service sets `job_id`, `step_name`, `file_id`, `warehouse_id`;
-- these fields are automatically appended to every log line in the execution context.
+- monolith задаёт `trace_id`, `file_id`, `warehouse_id`;
+- batch service задаёт `job_id`, `step_name`, `file_id`, `warehouse_id`;
+- эти поля автоматически добавляются в каждую строку лога в контексте выполнения.
 
-Kibana/OpenSearch common queries:
+Типовые запросы Kibana/OpenSearch:
 
 ```text
 job_id:"job-84219"
@@ -149,11 +149,11 @@ trace_id:"4f3c2a4d7a1b4e2f9c0a123456789abc"
 error_code:"GCS_ACCESS_DENIED"
 ```
 
-## Retention
+## Хранение
 
-Suggested retention:
+Рекомендуемый срок хранения:
 
-- application logs: 14-30 days hot storage;
-- error logs and audit logs: 90 days or according to compliance;
-- large stacktraces and debug logs: shorter retention;
-- GCS error reports: aligned with business audit requirements.
+- application logs: 14-30 дней в hot storage;
+- error logs и audit logs: 90 дней или согласно compliance;
+- большие stacktraces и debug logs: более короткий retention;
+- GCS error reports: в соответствии с требованиями бизнес-аудита.

@@ -79,7 +79,7 @@ Airflow хорошо подходит для интеграции с HTTP API:
 
 Это снижает стоимость развития: новые источники и назначения подключаются через готовые hooks, operators и sensors, а не через полностью самописный orchestration layer.
 
-## DAG, branching, conditions, event triggers
+## DAG, ветвление, условия и событийные триггеры
 
 Airflow описывает pipeline как DAG: задачи, зависимости и правила запуска явно видны в коде и UI.
 
@@ -114,10 +114,10 @@ Airflow описывает pipeline как DAG: задачи, зависимос
 Airflow дает базовую наблюдаемость из коробки:
 
 - UI со статусами DAG/task runs;
-- retry history;
-- task logs;
+- история retry;
+- логи задач;
 - SLA/alerts;
-- email notifications;
+- email-уведомления;
 - metrics через StatsD/Prometheus/Grafana при production-настройке.
 
 Для production рекомендуется добавить централизованные логи, метрики длительности задач и объема данных, алерты по failed DAG runs, data quality checks после загрузки и lineage/каталог данных при необходимости.

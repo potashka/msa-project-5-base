@@ -1,60 +1,60 @@
-# Alternatives for TradeWare ETL
+# Альтернативы для ETL TradeWare
 
-## Decision context
+## Контекст решения
 
-TradeWare needs to move heavy CSV processing out of the Java/WildFly monolith. The near-term target is reliable ETL for warehouse reports:
+TradeWare нужно вынести тяжёлую обработку CSV из Java/WildFly-монолита. Ближайшая цель - надёжный ETL для складских отчётов:
 
-- about 400 000 rows per day;
-- 2-3x growth on peak days;
-- 100-150 parallel uploads in peak hours;
-- average processing time for a 2 000-row report up to 30 seconds;
-- Java team, PostgreSQL and GCS are already in place;
-- migration path toward microservices is required.
+- около 400 000 строк в день;
+- рост нагрузки в 2-3 раза в пиковые дни;
+- 100-150 параллельных загрузок в пиковые часы;
+- среднее время обработки отчёта на 2 000 строк - до 30 секунд;
+- Java-команда, PostgreSQL и GCS уже используются;
+- нужен путь миграции к микросервисам.
 
-Spring Batch is selected for the nearest stage because it solves the current pain with the smallest technology jump.
+Spring Batch выбран для ближайшего этапа, потому что решает текущую проблему с минимальным технологическим скачком.
 
-## Comparison
+## Сравнение
 
-| Alternative | Strengths | Weaknesses for this case | Fit |
+| Альтернатива | Сильные стороны | Слабые стороны для этого сценария | Соответствие задаче |
 |---|---|---|---|
-| Apache Airflow | Strong orchestration, DAG UI, retries, scheduling, good visibility for multi-step pipelines. | Airflow is an orchestrator, not a row-level processing engine. For chunk processing, per-row validation, skip/retry and JDBC upsert, another worker/service is still needed. Adds a separate platform to operate. | Useful later if TradeWare needs many dependent data pipelines, scheduled workflows and cross-system orchestration. Not the best first extraction step. |
-| Kubernetes CronJob | Simple cloud-native scheduled jobs, easy deployment in Kubernetes, low overhead. | The workload is user-triggered uploads with many parallel files, not only a scheduled daily task. CronJob has limited job lifecycle UX and no built-in chunk restartability, skip policy or JobRepository. | Good for simple scheduled exports/imports. Too primitive for interactive CSV upload processing at peak concurrency. |
-| Apache Spark | Distributed processing, strong for large datasets, partitioning, scalable compute. | Operationally heavier. Requires Spark cluster/operator or managed service. For 400k-1.2M rows/day and 2k-row reports, Spark is likely overkill. Java team would face a bigger implementation and operations shift. | Good if data grows to tens/hundreds of millions of rows or transformations become analytical and distributed. |
-| Google Dataflow / Apache Beam | Managed scaling, strong batch/stream model, GCP-native, good for large data pipelines. | Requires Beam programming model and stronger cloud coupling. More expensive learning curve and operational model change than Spring Batch. Integration with monolith status UX and row-level business validation needs extra design. | Strong future option for cloud-native data platform migration. Not the smallest near-term step. |
-| Kafka Streams | Excellent for event streams, stateful stream processing, continuous updates. | Current source is uploaded CSV files in GCS. Kafka Streams is not a natural fit for file-based import with chunk restartability and skip reports. Would require converting file rows into events and designing topics, ordering and replay. | Useful later if TradeWare moves to event-driven inventory/nomenclature updates. Not ideal for CSV ETL extraction from monolith. |
-| Spring Batch | Built for batch jobs, chunk-oriented processing, retry/skip/restartability, JobRepository, Java/JDBC integration, familiar to Java teams. | Adds a new service and metadata repository. Needs careful idempotency, parallelism control and DB load management. Not a distributed big-data engine. | Best near-term choice for extracting CSV processing from Java monolith while staying close to the existing stack. |
+| Apache Airflow | Сильная оркестрация, DAG UI, retries, расписания, хорошая видимость многошаговых пайплайнов. | Airflow - оркестратор, а не движок построчной обработки. Для chunk processing, построчной валидации, skip/retry и JDBC upsert всё равно нужен отдельный worker/service. Добавляет отдельную платформу в эксплуатацию. | Полезен позже, если TradeWare потребуются многочисленные зависимые data pipelines, расписания и межсистемная оркестрация. Не лучший первый шаг для выноса обработки. |
+| Kubernetes CronJob | Простые cloud-native scheduled jobs, лёгкое развёртывание в Kubernetes, низкий overhead. | Нагрузка состоит из пользовательских загрузок множества файлов, а не только из ежедневной задачи по расписанию. У CronJob ограниченный lifecycle UX и нет встроенных chunk restartability, skip policy или JobRepository. | Хорош для простых регулярных импортов/экспортов. Слишком примитивен для интерактивной обработки CSV при пиковой конкуренции. |
+| Apache Spark | Распределённая обработка, сильная работа с большими наборами данных, partitioning, масштабируемый compute. | Операционно тяжелее. Нужен Spark cluster/operator или managed service. Для 400k-1.2M строк в день и отчётов по 2k строк Spark, скорее всего, избыточен. Java-команда получит более сложную реализацию и эксплуатацию. | Хорош, если данные вырастут до десятков/сотен миллионов строк или трансформации станут аналитическими и распределёнными. |
+| Google Dataflow / Apache Beam | Managed scaling, сильная batch/stream-модель, GCP-native подход, хорош для крупных data pipelines. | Требует модели программирования Beam и более сильной привязки к облаку. Дороже по learning curve и операционной модели, чем Spring Batch. Интеграция со статусным UX монолита и бизнес-валидацией строк требует дополнительного дизайна. | Сильная будущая опция для cloud-native миграции data platform. Не самый малый ближайший шаг. |
+| Kafka Streams | Отличен для event streams, stateful stream processing и непрерывных обновлений. | Текущий источник - загруженные CSV-файлы в GCS. Kafka Streams неестественен для file-based import с chunk restartability и отчётами по пропущенным строкам. Потребуется превращать строки файла в события и проектировать topics, ordering и replay. | Полезен позже, если TradeWare перейдёт к event-driven обновлениям inventory/nomenclature. Не идеален для выноса CSV ETL из монолита. |
+| Spring Batch | Создан для batch jobs, chunk-oriented processing, retry/skip/restartability, JobRepository, Java/JDBC integration, привычен Java-командам. | Добавляет новый сервис и metadata repository. Требует аккуратного проектирования idempotency, контроля parallelism и нагрузки на БД. Не является распределённым big-data engine. | Лучший ближайший выбор для выноса CSV processing из Java-монолита с сохранением близости к текущему стеку. |
 
-## Why Spring Batch is selected for the nearest stage
+## Почему Spring Batch выбран для ближайшего этапа
 
-Spring Batch directly addresses the current failure mode: long-running row-by-row processing blocks the online monolith. It moves the workload into a dedicated processing service while preserving familiar Java, PostgreSQL and GCS integration.
+Spring Batch напрямую закрывает текущий failure mode: долгая построчная обработка блокирует online-монолит. Он переносит нагрузку в отдельный processing service, сохраняя привычную интеграцию с Java, PostgreSQL и GCS.
 
-Key reasons:
+Ключевые причины:
 
-- chunk-oriented processing reduces transaction overhead and avoids loading whole files into memory;
-- JobRepository gives job/step status, restartability and execution history;
-- retry, skip and backoff policies are first-class patterns;
-- idempotent upsert can be implemented close to existing domain logic;
-- Java team can reuse existing validation/enrichment code more easily than with Spark/Dataflow;
-- the monolith can evolve into a thin upload/status facade without a full rewrite;
-- Kubernetes scaling can be added incrementally through more service replicas, partitioning and concurrency limits.
+- chunk-oriented processing снижает транзакционный overhead и не требует загружать целые файлы в память;
+- JobRepository даёт статус job/step, restartability и историю выполнения;
+- retry, skip и backoff являются встроенными паттернами;
+- idempotent upsert можно реализовать рядом с существующей доменной логикой;
+- Java-команда может проще переиспользовать существующий код валидации и enrichment, чем при Spark/Dataflow;
+- монолит может постепенно превратиться в тонкий upload/status facade без полного переписывания;
+- Kubernetes scaling можно добавить постепенно через дополнительные реплики сервиса, partitioning и лимиты конкуренции.
 
-## Limitations of Spring Batch
+## Ограничения Spring Batch
 
-Spring Batch is not a universal data platform. Its main limitations for TradeWare are:
+Spring Batch не является универсальной data platform. Основные ограничения для TradeWare:
 
-- it does not remove the need to design concurrency control;
-- PostgreSQL can still become the bottleneck if too many jobs write at once;
-- partitioning/multithreaded steps require thread-safe readers, processors and writers;
-- JobRepository must be monitored and maintained;
-- very large distributed workloads may eventually need Spark or Dataflow;
-- asynchronous UX must be designed explicitly in the monolith and frontend;
-- operational maturity is required: dashboards, alerts, failed job handling, restart procedures and runbooks.
+- он не отменяет необходимость проектировать concurrency control;
+- PostgreSQL всё ещё может стать bottleneck, если слишком много jobs одновременно пишут данные;
+- partitioning и multithreaded steps требуют thread-safe readers, processors и writers;
+- JobRepository нужно мониторить и обслуживать;
+- очень большие распределённые нагрузки со временем могут потребовать Spark или Dataflow;
+- асинхронный UX нужно явно спроектировать в монолите и frontend;
+- нужна операционная зрелость: dashboards, alerts, обработка failed jobs, процедуры restart и runbooks.
 
-## Recommended evolution
+## Рекомендуемая эволюция
 
-1. Extract CSV processing into Spring Batch Processing Service.
-2. Add JobRepository, status API and async upload UX.
-3. Add metrics, logs, alerting and operational runbooks.
-4. Tune chunk size, DB indexes, batch writes and connection pools.
-5. Add controlled parallelism and partitioning after baseline measurements.
-6. Revisit Airflow/Dataflow/Spark only if pipelines become cross-system, strongly scheduled or truly distributed at larger scale.
+1. Вынести CSV processing в Spring Batch Processing Service.
+2. Добавить JobRepository, status API и async upload UX.
+3. Добавить metrics, logs, alerting и operational runbooks.
+4. Настроить chunk size, индексы БД, batch writes и connection pools.
+5. Добавить контролируемый parallelism и partitioning после baseline-измерений.
+6. Вернуться к Airflow/Dataflow/Spark только если пайплайны станут межсистемными, жёстко расписанными или действительно распределёнными на большем масштабе.
