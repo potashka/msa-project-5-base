@@ -1,0 +1,28 @@
+@startuml TradeWare_Task2_ToBe
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+LAYOUT_WITH_LEGEND()
+
+title TradeWare Task 2 - To Be: Daily B2B price-list export
+
+Person(b2bClient, "B2B Client", "Receives custom CSV/XLS price lists")
+Person(salesManager, "Sales Manager", "Checks generated price lists and shares them with customers")
+
+System_Boundary(tradeware, "TradeWare Kubernetes Platform") {
+  Container(cronJob, "Kubernetes CronJob\nprice-list-exporter", "Containerized batch job", "Runs every day at 06:00, reads current product data and generates B2B price lists")
+  ContainerDb(priceDb, "Price List PostgreSQL DB", "PostgreSQL", "products, categories, clients, client_prices")
+  Container(storage, "File/Object Storage", "S3/GCS or PVC for local POC", "Stores generated CSV/XLS files")
+  Container(monitoring, "Monitoring / Logging", "Prometheus, Grafana, Loki/ELK, Kubernetes Events", "Collects job status, metrics, events and structured logs")
+}
+
+System_Ext(k8sScheduler, "Kubernetes Cron Scheduler", "Triggers CronJob by CRON expression")
+
+Rel(k8sScheduler, cronJob, "Starts daily at 06:00", "schedule: 0 6 * * *, timezone: Europe/Moscow")
+Rel(cronJob, priceDb, "Reads current prices and product metadata", "SQL JOIN")
+Rel(cronJob, storage, "Writes generated price lists", "CSV/XLS")
+Rel(cronJob, monitoring, "Sends stdout/stderr logs and exposes job status", "JSON logs, Kubernetes Job status")
+Rel(monitoring, salesManager, "Provides run status and alerts", "Dashboards / alerts")
+Rel(storage, b2bClient, "Provides custom price-list files", "Download link / delivery channel")
+Rel(storage, salesManager, "Allows checking generated files", "Read access")
+
+@enduml

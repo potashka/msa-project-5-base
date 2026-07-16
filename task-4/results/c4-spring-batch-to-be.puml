@@ -1,0 +1,34 @@
+@startuml TradeWare_Spring_Batch_ToBe
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+LAYOUT_WITH_LEGEND()
+
+title TradeWare To Be - CSV ETL with Spring Batch
+
+Person(employee, "Warehouse Employee", "Uploads CSV reports and checks processing status")
+
+System_Boundary(tradeware, "TradeWare Platform") {
+  Container(frontend, "Angular Frontend", "Angular", "ERP web interface for CSV upload and status view")
+  Container(monolith, "Java/WildFly Monolith", "Java EE / WildFly", "Accepts uploads, stores files in GCS, creates batch jobs, shows status")
+  Container(gcs, "GCS File Storage", "Google Cloud Storage", "Stores uploaded CSV files and optional error reports")
+  Container(batch, "Spring Batch Processing Service", "Java / Spring Boot / Spring Batch", "Reads CSV, validates rows, enriches data and writes nomenclature updates")
+  ContainerDb(refDb, "PostgreSQL Reference DB", "PostgreSQL", "Dictionaries and reference data for enrichment")
+  ContainerDb(nomenclatureDb, "PostgreSQL Nomenclature DB", "PostgreSQL", "Target database with normalized nomenclature data")
+  ContainerDb(jobRepo, "Batch Metadata DB / JobRepository", "PostgreSQL", "Spring Batch job and step execution metadata")
+  Container(monitoring, "Monitoring / Logging", "Prometheus, Grafana, ELK/Loki, Alerting", "Metrics, logs, alerts and job observability")
+}
+
+Rel(employee, frontend, "Uploads CSV and views processing status", "HTTPS")
+Rel(frontend, monolith, "Sends CSV upload request and status requests", "REST/HTTPS")
+Rel(monolith, gcs, "Stores uploaded CSV file", "GCS API")
+Rel(monolith, batch, "Creates batch job with file URI and upload metadata", "REST/API or message")
+Rel(batch, gcs, "Reads source CSV and writes error report if needed", "GCS API")
+Rel(batch, refDb, "Loads dictionaries and enrichment data", "JDBC")
+Rel(batch, nomenclatureDb, "Writes validated and enriched rows", "JDBC batch upsert")
+Rel(batch, jobRepo, "Stores job/step status, counters and restart metadata", "Spring Batch JobRepository")
+Rel(monolith, batch, "Reads processing status for upload", "REST/API")
+Rel(monolith, frontend, "Returns async processing status", "REST/HTTPS")
+Rel(batch, monitoring, "Emits structured logs and metrics", "Logs / Micrometer")
+Rel(monolith, monitoring, "Emits upload/status logs and metrics", "Logs / metrics")
+
+@enduml

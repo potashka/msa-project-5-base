@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: exporter-config
+  namespace: shipments-batch
+data:
+  DB_HOST: postgres
+  DB_PORT: "5432"
+  DB_NAME: shipments_db
+  EXPORT_DIR: /exports

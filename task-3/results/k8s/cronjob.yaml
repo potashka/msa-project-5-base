@@ -1,0 +1,43 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: shipments-export-cronjob
+  namespace: shipments-batch
+spec:
+  schedule: "0 20 * * *"
+  timeZone: "Europe/Moscow"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 3
+      template:
+        metadata:
+          labels:
+            app: shipments-exporter
+        spec:
+          restartPolicy: Never
+          containers:
+            - name: shipments-exporter
+              image: shipments-exporter:local
+              imagePullPolicy: Never
+              envFrom:
+                - configMapRef:
+                    name: exporter-config
+                - secretRef:
+                    name: exporter-secret
+              resources:
+                requests:
+                  cpu: 100m
+                  memory: 128Mi
+                limits:
+                  cpu: 500m
+                  memory: 256Mi
+              volumeMounts:
+                - name: exports
+                  mountPath: /exports
+          volumes:
+            - name: exports
+              persistentVolumeClaim:
+                claimName: exports-pvc

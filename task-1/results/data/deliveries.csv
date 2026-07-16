@@ -1,0 +1,7 @@
+order_id,delivery_status,updated_at,courier_partner
+1001,in_transit,2026-07-04T12:10:00,fastline
+1002,delivered,2026-07-04T18:20:00,fastline
+1003,delivered,2026-07-04T19:05:00,cityship
+1004,cancelled,2026-07-04T13:20:00,cityship
+1005,delayed,2026-07-05T20:45:00,northwind
+1006,delivered,2026-07-05T21:10:00,northwind

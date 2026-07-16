@@ -1,0 +1,116 @@
+groups:
+  - name: tradeware-batch-alerts
+    rules:
+      - alert: BatchJobFailed
+        expr: increase(batch_job_failed_total[5m]) > 0
+        for: 1m
+        labels:
+          severity: critical
+          service: spring-batch-processing-service
+        annotations:
+          summary: "Batch job failed"
+          description: "At least one TradeWare batch job failed in the last 5 minutes."
+
+      - alert: BatchJobDurationAboveSla
+        expr: histogram_quantile(0.95, sum(rate(batch_job_duration_seconds_bucket[10m])) by (le, job_name)) > 30
+        for: 10m
+        labels:
+          severity: warning
+          service: spring-batch-processing-service
+        annotations:
+          summary: "Batch job duration is above SLA"
+          description: "p95 batch job duration is above 30 seconds for 10 minutes."
+
+      - alert: TooManySkippedRows
+        expr: sum(rate(batch_step_skip_count[10m])) / clamp_min(sum(rate(batch_step_read_count[10m])), 1) > 0.01
+        for: 10m
+        labels:
+          severity: warning
+          service: spring-batch-processing-service
+          type: data_quality
+        annotations:
+          summary: "Too many skipped rows"
+          description: "Skipped rows exceed 1% of read rows."
+
+      - alert: NoSuccessfulBatchJobs
+        expr: increase(batch_job_success_total[2h]) == 0
+        for: 2h
+        labels:
+          severity: critical
+          service: spring-batch-processing-service
+        annotations:
+          summary: "No successful batch jobs"
+          description: "No successful batch jobs were observed in the last 2 hours."
+
+      - alert: HighBatchRetryRate
+        expr: increase(batch_retry_total[10m]) > 50
+        for: 10m
+        labels:
+          severity: warning
+          service: spring-batch-processing-service
+        annotations:
+          summary: "High batch retry rate"
+          description: "Batch retry count increased by more than 50 in 10 minutes."
+
+  - name: tradeware-dependency-alerts
+    rules:
+      - alert: PostgreSQLUnavailable
+        expr: postgres_up == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: postgresql
+        annotations:
+          summary: "PostgreSQL is unavailable"
+          description: "postgres_up is 0 for more than 1 minute."
+
+      - alert: HighDbConnections
+        expr: db_connection_pool_active / db_connection_pool_max > 0.8
+        for: 10m
+        labels:
+          severity: warning
+          service: database
+        annotations:
+          summary: "High DB connection pool usage"
+          description: "Active DB connections are above 80% of the configured pool size."
+
+      - alert: GcsAccessErrors
+        expr: increase(gcs_request_errors_total[5m]) > 0
+        for: 5m
+        labels:
+          severity: critical
+          service: gcs
+        annotations:
+          summary: "GCS access errors detected"
+          description: "GCS read/write/access errors were observed in the last 5 minutes."
+
+  - name: tradeware-application-alerts
+    rules:
+      - alert: HighHttp5xxRate
+        expr: sum(rate(http_server_requests_seconds_count{status=~"5.."}[5m])) by (service) / clamp_min(sum(rate(http_server_requests_seconds_count[5m])) by (service), 1) > 0.05
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High HTTP 5xx rate"
+          description: "HTTP 5xx rate is above 5% for service {{ $labels.service }}."
+
+      - alert: HighJvmMemoryUsage
+        expr: sum(jvm_memory_used_bytes{area="heap"}) by (service) / sum(jvm_memory_max_bytes{area="heap"}) by (service) > 0.85
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High JVM heap usage"
+          description: "JVM heap usage is above 85% for service {{ $labels.service }}."
+
+  - name: tradeware-kubernetes-alerts
+    rules:
+      - alert: HighPodRestartCount
+        expr: increase(kube_pod_container_status_restarts_total[15m]) > 3
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High pod restart count"
+          description: "Pod container restarted more than 3 times in 15 minutes."
